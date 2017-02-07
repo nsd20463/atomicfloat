@@ -1,11 +1,6 @@
 /*
   atomic operations on float64
 
-  The missing functions from the standard atomic package
-  (along with atomic bools. I've wanted atomic bools many more times than I've wanted atomic floats,
-   but atomic bools are tricker because most CPUs can't really do atomic ops on small data, so it becomes
-   an op on the larger, enclosing 32-bit word)
-
   Copyright 2017 Nicolas Dade
 */
 package atomicfloat
@@ -39,4 +34,11 @@ func AddFloat64(p *float64, v float64) {
 			return
 		}
 	}
+}
+
+func CompareAndSwapFloat64(p *float64, prev, next float64) bool {
+	previ := math.Float64bits(prev) // note that doing the compare in uint64 conveniently makes NaN==NaN, which in this case is exactly what we want
+	nexti := math.Float64bits(next) // and we ignore (or properly propagate) the many different values of NaN (all 2*(2^52-1) of them).
+	pi := (*uint64)(unsafe.Pointer(p))
+	return atomic.CompareAndSwapUint64(pi, previ, nexti)
 }

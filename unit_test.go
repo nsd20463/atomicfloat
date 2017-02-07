@@ -98,3 +98,23 @@ func BenchmarkRegularAdd(b *testing.B) {
 func nonatomicAddFloat64(x *float64, y float64) {
 	*x += y
 }
+
+func TestCAS(t *testing.T) {
+	var x float64
+	if CompareAndSwapFloat64(&x, 1, 2) {
+		t.Error("should have failed")
+	}
+	if !CompareAndSwapFloat64(&x, 0, 4) {
+		t.Error("should have succeeded")
+	}
+	if x != 4 {
+		t.Error("should have updated")
+	}
+}
+
+func BenchmarkCAS(b *testing.B) {
+	var x float64
+	for i := 0; i < b.N; i++ {
+		CompareAndSwapFloat64(&x, x, x+1)
+	}
+}
